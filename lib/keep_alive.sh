@@ -10,6 +10,6 @@ keep_alive(){
         sudo -k
     }
 
-    trap '_cleanup; echo ""; echo "ERROR: failed at line $LINENO (exit code $?). Check the output above." >&2' ERR
+    trap '_cleanup; echo ""; echo "ERROR: failed at line $LINENO (exit code $?). Check the output above." >&2; exit 1' ERR
     trap '_cleanup' EXIT
 }

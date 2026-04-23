@@ -12,6 +12,16 @@ check_prerequisites() {
     done
 }
 
+prepare_pacman() {
+    local PACMAN_CONF="/etc/pacman.conf"
+    echo "Configuring pacman..."
+
+    sudo sed -i 's/^#\(ILoveCandy\)/\1/' "$PACMAN_CONF"
+    sudo sed -i 's/^#\(ParallelDownloads\s*=\s*\).*/\110/' "$PACMAN_CONF"
+
+    echo "pacman.conf updated."
+}
+
 update_mirrors() {
     echo "Updating mirrorlist for faster downloads..."
     install_pacman "${mirrors_prereqs[@]}"
@@ -23,76 +33,56 @@ update_mirrors() {
 
 set_variables() {
     echo "Choose your installation method:"
-    echo "1) Manual (choose everything yourself)"
-    echo "2) GNOME + gaming"
-    echo "3) GNOME, no gaming"
-    echo "4) KDE Plasma + gaming"
-    echo "5) KDE Plasma, no gaming"
-    echo "6) Exit"
-    read -p "Enter 1-6: " mode
-
+    declare mode
+    single_select mode "Manual" "GNOME + gaming" "GNOME, no gaming" "KDE Plasma + gaming" "KDE Plasma, no gaming" "Exit"
     choices[chosen_mode]=$mode
+    [[ "${choices[chosen_mode]}" == "Exit" ]] && exit 0
 
-    if [[ ! "${choices[chosen_mode]}" =~ ^[1-6]$ ]]; then
-        echo "Invalid input."
-        exit 1
-    fi
-
-    [[ "${choices[chosen_mode]}" == "6" ]] && exit 0
-
-    choices[terminal]=kitty
+    terminal_options=(kitty)
     choices[terminal_utilities]=true
-    choices[terminal_text_editor]=micro
+    tte_options=(micro)
     choices[shell]=zsh
     choices[shell_customization]=true
     choices[wine_install]=true
-    choices[printer_support]=1
+    choices[printer_support]="Yes"
     choices[gaming_packages]=true
 
     case ${choices[chosen_mode]} in
-        2) choices[desktop]=1; choices[gaming_packages]=true; choices[terminal]=gnome-console ;;
-        3) choices[desktop]=1; choices[gaming_packages]=false; choices[terminal]=gnome-console ;;
-        4) choices[desktop]=2; choices[gaming_packages]=true; choices[terminal]=konsole ;;
-        5) choices[desktop]=2; choices[gaming_packages]=false; choices[terminal]=konsole ;;
+        "GNOME + gaming") choices[desktop]="Gnome"; choices[gaming_packages]=true; terminal_options=(gnome-console) ;;
+        "GNOME, no gaming") choices[desktop]="Gnome"; choices[gaming_packages]=false; terminal_options=(gnome-console) ;;
+        "KDE Plasma + gaming") choices[desktop]="KDE Plasma"; choices[gaming_packages]=true; terminal_options=(konsole) ;;
+        "KDE Plasma, no gaming") choices[desktop]="KDE Plasma"; choices[gaming_packages]=false; terminal_options=(konsole) ;;
     esac
 }
 
 choose_de() {
-    while true; do
-        if [[ "${choices[chosen_mode]}" == "1" ]]; then
-            echo "Choose your Desktop Environment:"
-            echo "1) GNOME"
-            echo "2) KDE Plasma"
-            echo "3) Exit"
-            read -p "Enter 1-3 [2]: " choiceDE
-            choices[desktop]=${choiceDE:-2}
-        fi
+    if [[ "${choices[chosen_mode]}" == "Manual" ]]; then
+        echo "Choose Your Desktop Environment"
+        declare desktop_choice
+        single_select desktop_choice "Gnome" "KDE Plasma" "Exit"
+        choices[desktop]=$desktop_choice
+    fi
 
-        case ${choices[desktop]} in
-            1)
-                echo "Installing GNOME..."
-                install_pacman "${gnome_core[@]}" "${gnome_config[@]}" "${gnome_files[@]}" "${gnome_gvfs[@]}" "${gnome_apps[@]}" && break || { echo "GNOME installation failed."; exit 1; }
-                ;;
-            2)
-                echo "Installing KDE Plasma..."
-                install_pacman "${kde_core[@]}" "${kde_visual[@]}" "${kde_hardware[@]}" "${kde_files[@]}" "${kde_apps[@]}" && break || { echo "KDE installation failed."; exit 1; }
-                ;;
-            3)
-                echo "Exiting."
-                exit 0
-                ;;
-            *)
-                echo "Invalid Choice. Please Enter 1-3"
-                ;;
-        esac
-    done
+    case ${choices[desktop]} in
+        "Gnome")
+            echo "Installing GNOME..."
+            install_pacman "${gnome_core[@]}" "${gnome_config[@]}" "${gnome_files[@]}" "${gnome_gvfs[@]}" "${gnome_apps[@]}" || { echo "GNOME installation failed."; exit 1; }
+            ;;
+        "KDE Plasma")
+            echo "Installing KDE Plasma..."
+            install_pacman "${kde_core[@]}" "${kde_visual[@]}" "${kde_hardware[@]}" "${kde_files[@]}" "${kde_apps[@]}" || { echo "KDE installation failed."; exit 1; }
+            ;;
+        "Exit")
+            exit 0
+            ;;
+    esac
 
     if systemctl is-enabled gdm &>/dev/null || systemctl is-enabled plasma-login-manager &>/dev/null; then
         echo "A display manager is already enabled. Skipping."
     else
         case ${choices[desktop]} in
-            1) sudo systemctl enable gdm                   && echo "Enabled GDM." ;;
-            2) sudo systemctl enable plasma-login-manager  && echo "Enabled Plasma Login Manager." ;;
+            "Gnome")       sudo systemctl enable gdm                  && echo "Enabled GDM." ;;
+            "KDE Plasma")  sudo systemctl enable plasma-login-manager && echo "Enabled Plasma Login Manager." ;;
         esac
     fi
 }
@@ -101,17 +91,15 @@ install_basic_features() {
     install_pacman "${base_packages[@]}"
     sudo systemctl enable paccache.timer
     sudo systemctl enable --now ufw.service
-
     install_pacman "${audio[@]}"
     install_pacman "${rendering[@]}"
-
     bluetooth_setup
 
-    if [[ "${choices[chosen_mode]}" == "1" ]]; then
+    if [[ "${choices[chosen_mode]}" == "Manual" ]]; then
         echo "Do you want to install printer support?"
-        echo "1) Yes  2) No"
-        read -p "Enter 1-2: " choicePRIN
-        choices[printer_support]=$choicePRIN
+        declare printer_choice
+        single_select printer_choice "Yes" "No"
+        choices[printer_support]=$printer_choice
     fi
 
     printer_setup
@@ -128,12 +116,15 @@ bluetooth_setup() {
 
 printer_setup() {
     case ${choices[printer_support]} in
-        1)
+        "Yes")
             install_pacman "${printer[@]}"
             sudo systemctl enable --now cups.socket
             sudo systemctl enable --now avahi-daemon.service
             sudo sed -i.bak '/^hosts:/c\hosts: files mymachines mdns_minimal [NOTFOUND=return] resolve [!UNAVAIL=return] dns myhostname' /etc/nsswitch.conf
             sudo usermod -aG lp,sys,wheel "$USER"
+            ;;
+        "No")
+            echo "Skipping printer support."
             ;;
     esac
 }
@@ -171,9 +162,9 @@ aur_setup() {
     sudo pacman-key --lsign-key 3056513887B78AEB
     sudo pacman -U --noconfirm 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-keyring.pkg.tar.zst'
     sudo pacman -U --noconfirm 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-mirrorlist.pkg.tar.zst'
-    sudo tee -a /etc/pacman.conf > /dev/null <<- 'EOF'
-    [chaotic-aur]
-    Include = /etc/pacman.d/chaotic-mirrorlist
+    sudo tee -a /etc/pacman.conf > /dev/null <<'EOF'
+[chaotic-aur]
+Include = /etc/pacman.d/chaotic-mirrorlist
 EOF
     sudo pacman -Syu --noconfirm
 }
