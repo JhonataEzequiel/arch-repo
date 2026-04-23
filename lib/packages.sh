@@ -58,7 +58,7 @@ gnome_apps=(
 )
 
 gnome_extra=(
-    extension-manager gapless gradia numix-folders-git numix-circle-icon-theme-git bazaar-git
+    extension-manager gapless gradia numix-folders-git numix-circle-icon-theme-git
 )
 
 #KDE
