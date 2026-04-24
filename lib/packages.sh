@@ -112,11 +112,15 @@ terminal_tools=(
     dysk tealdeer btop fastfetch bat fd eza fzf zoxide ripgrep yazi wl-clipboard resvg
 )
 
+browsers=(
+    firefox brave-bin zen-browser-bin vivaldi google-chrome floorp librewolf chromium firedragon waterfox-bin qutebrowser
+)
+
 terminal_text_editors=(
     nano vim micro neovim
 )
 
-zsh_plugins=(
+zsh_and_plugins=(
     zsh zsh-autosuggestions zsh-syntax-highlighting zsh-completions
 )
 

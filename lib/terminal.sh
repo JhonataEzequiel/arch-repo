@@ -51,7 +51,7 @@ install_zsh() {
         choices[shell]=zsh
     fi
 
-    install_pacman "${zsh_plugins[@]}"
+    install_pacman "${zsh_and_plugins[@]}"
     chsh -s "$(which zsh)"
 }
 

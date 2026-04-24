@@ -20,6 +20,6 @@ terminal_utilities_setup
 install_zsh
 shell_customizations
 wine_setup
-gaming_setup
 install_drivers
+gaming_setup
 configure_extra_setup

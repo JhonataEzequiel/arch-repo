@@ -48,6 +48,7 @@ set_variables() {
     choices[extra_configs]=true
     choices[gnome_extra_choice]=true
     choices[timeshift_choice]=true
+    choices[browser_choice]=firefox 
 
     case ${choices[chosen_mode]} in
         "GNOME + gaming") choices[desktop]="Gnome"; choices[gaming_packages]=true; terminal_options=(gnome-console) ;;
@@ -108,6 +109,7 @@ install_basic_features() {
     fcitx5_setup
     aur_setup
     install_yay "${fonts[@]}"
+    install_pacman "${extraction_packages[@]}"
 }
 
 bluetooth_setup() {

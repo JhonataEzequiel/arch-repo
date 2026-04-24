@@ -2,6 +2,7 @@ configure_extra_setup() {
     cronie_and_timeshift_setup
     [[ "${choices[desktop]}" == "Gnome" ]] && gnome_extra_setup
     extra_apps
+    browser_selection
 }
 
 cronie_and_timeshift_setup() {
@@ -43,8 +44,20 @@ extra_apps() {
         echo "Choose which extra packages you want to install"
         multi_select extra_choices "${extra[@]}" "None"
         [[ " ${extra_choices[*]} " == *" None "* ]] && return
+        install_yay "${extra_choices[@]}"
+    else
+        install_yay "${extra[@]}"
     fi
+}
 
-    install_yay "${extra_choices[@]}"
-    
+browser_selection() {
+    declare -a browser_choices
+    if [[ "${choices[chosen_mode]}" == "Manual" ]]; then
+        echo "Select which browsers you wish to install"
+        multi_select browser_choices "${browsers[@]}" "None"
+        [[ " ${browser_choices[*]} " == *" None "* ]] && return
+        install_yay "${browser_choices[@]}"
+    else
+        install_yay "${choices[browser_choice]}"
+    fi
 }
