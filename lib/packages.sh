@@ -50,7 +50,7 @@ gnome_files=(
 )
 
 gnome_gvfs=(
-    gvfs gvfs-google
+    gvfs
 )
 
 gnome_apps=(
@@ -125,7 +125,7 @@ zsh_and_plugins=(
 )
 
 wine_and_dependencies=(
-    wine-staging xwayland winetricks giflib libpng libldap gnutls mpg123 openal v4l-utils libpulse alsa-plugins alsa-lib libjpeg-turbo libxcomposite libxinerama ncurses opencl-icd-loader libxslt libva gtk3 gst-plugins-base-libs vulkan-icd-loader
+    wine-staging winetricks giflib libpng libldap gnutls mpg123 openal v4l-utils libpulse alsa-plugins alsa-lib libjpeg-turbo libxcomposite libxinerama ncurses opencl-icd-loader libxslt libva gtk3 gst-plugins-base-libs vulkan-icd-loader
 )
 
 gaming=(
