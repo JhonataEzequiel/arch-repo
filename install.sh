@@ -3,6 +3,7 @@ set -euo pipefail
 declare -A choices
 declare -a tte_options
 declare -a terminal_options
+declare -a terminal_utilities_options
 
 source lib/header.sh
 
@@ -13,5 +14,12 @@ update_mirrors
 set_variables
 choose_de
 install_basic_features
-terminal_text_editor_setup
 terminal_emulator_setup
+terminal_text_editor_setup
+terminal_utilities_setup
+install_zsh
+shell_customizations
+wine_setup
+gaming_setup
+install_drivers
+configure_extra_setup

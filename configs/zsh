@@ -1,0 +1,103 @@
+[[ $- != *i* ]] && return
+
+eval "$(starship init zsh)"
+eval "$(zoxide init zsh)"
+
+# pokemon-colorscripts --no-title -r
+# fastfetch
+
+fpath=(/usr/share/zsh/site-functions $fpath)
+
+autoload -Uz compinit
+compinit
+
+source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh 2>/dev/null
+source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh 2>/dev/null
+
+zstyle ':completion:*' menu select
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
+
+# Functions
+extract() {
+    local delete="n" confirm="y"
+    while [[ "$1" == --* ]]; do
+        if [[ "$1" == "--delete" ]]; then
+            delete="y"
+        elif [[ "$1" == "--no-confirm" ]]; then
+            confirm="n"
+        fi
+        shift
+    done
+
+    for f in *.(zip|rar|7z|tar.gz|tar|tgz|tar.bz2)(N); do
+        if [[ -f "$f" ]]; then
+            echo "Extracting $f"
+            case "$f" in
+                *.zip) unzip "$f" || return 1 ;;
+                *.rar) unrar x "$f" || return 1 ;;
+                *.7z) 7z x "$f" || return 1 ;;
+                *.tar.gz|*.tgz) tar -xzf "$f" || return 1 ;;
+                *.tar) tar -xf "$f" || return 1 ;;
+                *.tar.bz2) tar -xjf "$f" || return 1 ;;
+            esac
+
+            if [[ "$delete" == "y" ]]; then
+                if [[ "$confirm" == "y" ]]; then
+                    read -q "user_confirm?Delete $f? [y/N] "
+                    echo
+                    [[ "$user_confirm" == "y" ]] && rm -f "$f" && echo "Deleted $f"
+                else
+                    rm -f "$f" && echo "Deleted $f"
+                fi
+            fi
+        fi
+    done
+}
+
+mkcd() {
+    if [[ -z "$1" ]]; then
+        echo "Usage: mkcd <directory>"
+        return 1
+    fi
+    mkdir -p "$1" && cd "$1" && echo "Created and entered: $(pwd)"
+}
+
+gitall() {
+    if [[ -z "$1" ]]; then
+        echo "Usage: gitall \"commit message\""
+        return 1
+    fi
+    git add . && git commit -m "$1" && git push && echo "Changes committed."
+}
+
+# Yazi Config
+function y() {
+	local tmp="$(mktemp -t "yazi-cwd.XXXXXX")"
+	yazi "$@" --cwd-file="$tmp"
+	if cwd="$(command cat -- "$tmp")" && [ -n "$cwd" ] && [ "$cwd" != "$PWD" ]; then
+		builtin cd -- "$cwd"
+	fi
+	rm -f -- "$tmp"
+}
+
+export EDITOR='micro' # change to your prefered one
+
+# aliases
+alias ls='eza --icons'
+alias grep='rg'
+alias find='fd'
+alias cd='z'
+alias cat='bat'
+alias update-system="yay -Syyu --noconfirm && flatpak update -y --noninteractive"
+alias clear-packages='orphans=$(yay -Qtdq); if [ -n "$orphans" ]; then yay -Rns --noconfirm $orphans; else echo "No packages to clear."; fi && flatpak remove --unused -y --noninteractive'
+alias speedup-mirrors="sudo reflector --sort rate --latest 20 --protocol https --save /etc/pacman.d/mirrorlist"
+alias clear-cache="sudo pacman -Scc --noconfirm && yay -Sc --noconfirm"
+alias test-nvidia="prime-run glxinfo | grep 'OpenGL renderer'"
+alias show-ip="ip -4 addr show | grep inet | awk '{print \$2}' | cut -d'/' -f1"
+alias show-ip-wifi="ip -4 addr show | grep inet | grep -E 'wlan|wlp' | awk '{print \$2}' | cut -d'/' -f1"
+alias logoff="gnome-session-quit --no-prompt"
+alias duh='du -h --max-depth=1 | sort -hr'
+alias update-grub="sudo update-grub"
+alias gs='git status'
+alias ga='git add .'
+alias gc='git commit -m'

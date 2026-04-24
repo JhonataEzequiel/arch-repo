@@ -39,13 +39,15 @@ set_variables() {
     [[ "${choices[chosen_mode]}" == "Exit" ]] && exit 0
 
     terminal_options=(kitty)
-    choices[terminal_utilities]=true
     tte_options=(micro)
     choices[shell]=zsh
     choices[shell_customization]=true
     choices[wine_install]=true
     choices[printer_support]="Yes"
     choices[gaming_packages]=true
+    choices[extra_configs]=true
+    choices[gnome_extra_choice]=true
+    choices[timeshift_choice]=true
 
     case ${choices[chosen_mode]} in
         "GNOME + gaming") choices[desktop]="Gnome"; choices[gaming_packages]=true; terminal_options=(gnome-console) ;;
@@ -105,6 +107,7 @@ install_basic_features() {
     printer_setup
     fcitx5_setup
     aur_setup
+    install_yay "${fonts[@]}"
 }
 
 bluetooth_setup() {
@@ -162,9 +165,13 @@ aur_setup() {
     sudo pacman-key --lsign-key 3056513887B78AEB
     sudo pacman -U --noconfirm 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-keyring.pkg.tar.zst'
     sudo pacman -U --noconfirm 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-mirrorlist.pkg.tar.zst'
-    sudo tee -a /etc/pacman.conf > /dev/null <<'EOF'
+    if ! grep -q '\[chaotic-aur\]' /etc/pacman.conf; then
+        sudo tee -a /etc/pacman.conf > /dev/null <<'EOF'
 [chaotic-aur]
 Include = /etc/pacman.d/chaotic-mirrorlist
 EOF
+    else
+        echo "chaotic-aur already present in pacman.conf, skipping."
+    fi
     sudo pacman -Syu --noconfirm
 }

@@ -3,7 +3,7 @@ mirrors_prereqs=(
 )
 
 base_packages=(
-    wget pacman-contrib ufw python python-pip ufw openssh ntfs-3g linux-headers fcitx5 fcitx5-gtk fcitx5-qt fcitx5-configtool flatpak pciutils base-devel
+    wget pacman-contrib ufw python python-pip ufw openssh ntfs-3g linux-headers fcitx5 fcitx5-gtk fcitx5-qt fcitx5-configtool flatpak pciutils base-devel dconf
 )
 
 extraction_packages=(
@@ -50,7 +50,7 @@ gnome_files=(
 )
 
 gnome_gvfs=(
-    gvfs gvfs-google gvfs-goa gvfs-afc gvfs-mtp gvfs-nfs gvfs-smb gvfs-wsdd gvfs-dnssd gvfs-gphoto2 gvfs-onedrive
+    gvfs gvfs-google
 )
 
 gnome_apps=(
@@ -59,6 +59,10 @@ gnome_apps=(
 
 gnome_extra=(
     extension-manager gapless gradia numix-folders-git numix-circle-icon-theme-git
+)
+
+gnome_gvfs_extra=(
+    gvfs-afc gvfs-mtp gvfs-nfs gvfs-smb gvfs-wsdd gvfs-dnssd gvfs-gphoto2 gvfs-onedrive gvfs-goa
 )
 
 #KDE
@@ -112,12 +116,33 @@ terminal_text_editors=(
     nano vim micro neovim
 )
 
+zsh_plugins=(
+    zsh zsh-autosuggestions zsh-syntax-highlighting zsh-completions
+)
+
 wine_and_dependencies=(
     wine-staging xwayland winetricks giflib libpng libldap gnutls mpg123 openal v4l-utils libpulse alsa-plugins alsa-lib libjpeg-turbo libxcomposite libxinerama ncurses opencl-icd-loader libxslt libva gtk3 gst-plugins-base-libs vulkan-icd-loader
 )
 
 gaming=(
     heroic-games-launcher-bin mangohud vkd3d glfw mangojuice wqy-zenhei jdk21-openjdk steam
+)
+
+timeshift_config=(
+    cronie timeshift 
+)
+
+extra=(
+    upscayl-desktop-git parsec-bin
+    obsidian pokemon-colorscripts-git gimp kdenlive
+    audacity komikku raider bottles gearlever
+    flatseal switcheroo spotify-launcher 
+    obs-studio discord libreoffice-still
+    octopi vscodium
+)
+
+grub_packages=(
+    grub grub-btrfs os-prober inotify-tools update-grub
 )
 
 #Package management helpers

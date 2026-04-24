@@ -7,9 +7,10 @@ keep_alive(){
 
     _cleanup() {
         kill "$_SUDO_KEEPALIVE_PID" 2>/dev/null
+        wait "$_SUDO_KEEPALIVE_PID" 2>/dev/null
         sudo -k
     }
 
-    trap '_cleanup; echo ""; echo "ERROR: failed at line $LINENO (exit code $?). Check the output above." >&2; exit 1' ERR
+    trap '_cleanup; echo ""; echo "ERROR: failed at line $LINENO (exit code $?). Check the output above." >&2' ERR
     trap '_cleanup' EXIT
 }
