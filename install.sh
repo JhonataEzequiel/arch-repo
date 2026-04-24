@@ -10,7 +10,7 @@ source lib/header.sh
 keep_alive
 check_prerequisites
 prepare_pacman
-update_mirrors
+#update_mirrors
 set_variables
 choose_de
 install_basic_features
