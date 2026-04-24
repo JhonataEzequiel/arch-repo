@@ -3,7 +3,7 @@ mirrors_prereqs=(
 )
 
 base_packages=(
-    wget pacman-contrib ufw python python-pip ufw openssh ntfs-3g linux-headers fcitx5 fcitx5-gtk fcitx5-qt fcitx5-configtool flatpak pciutils base-devel dconf
+    wget pacman-contrib ufw python python-pip ufw openssh ntfs-3g linux-headers ibus flatpak pciutils base-devel dconf
 )
 
 extraction_packages=(

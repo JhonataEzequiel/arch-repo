@@ -106,7 +106,7 @@ install_basic_features() {
     fi
 
     printer_setup
-    fcitx5_setup
+    ibus-daemon -drx
     aur_setup
     install_yay "${fonts[@]}"
     install_pacman "${extraction_packages[@]}"
@@ -132,19 +132,6 @@ printer_setup() {
             echo "Skipping printer support."
             ;;
     esac
-}
-
-fcitx5_setup() {
-    local ENV_FILE="/etc/environment"
-    local env_vars=(
-        "GTK_IM_MODULE=fcitx"
-        "QT_IM_MODULE=fcitx"
-        "XMODIFIERS=@im=fcitx"
-    )
-    for var in "${env_vars[@]}"; do
-        grep -qF "$var" "$ENV_FILE" || echo "$var" | sudo tee -a "$ENV_FILE" > /dev/null
-    done
-    echo "Fcitx5 environment variables written to ${ENV_FILE}."
 }
 
 aur_setup() {
