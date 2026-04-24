@@ -4,38 +4,57 @@ multi_select() {
     local options=("$@")
     local selected=()
     local cursor=0
-    local key
+    local key seq
 
     for (( i=0; i<${#options[@]}; i++ )); do
         selected+=(false)
     done
 
-    tput civis
-
-    # Initial draw
-    for (( i=0; i<${#options[@]}; i++ )); do
-        if [[ "${selected[$i]}" == true ]]; then
-            local mark="[x]"
-        else
+    _draw_multi() {
+        local i
+        for (( i=0; i<${#options[@]}; i++ )); do
             local mark="[ ]"
-        fi
-        if [[ $i -eq $cursor ]]; then
-            echo -e "\e[7m  $mark ${options[$i]}\e[0m"
-        else
-            echo "  $mark ${options[$i]}"
-        fi
-    done
-    echo ""
-    echo "  [space] select/deselect   [enter] confirm   [↑↓] navigate"
+            [[ "${selected[$i]}" == true ]] && mark="[x]"
+            if [[ $i -eq $cursor ]]; then
+                printf "\e[7m  %s %s\e[0m\n" "$mark" "${options[$i]}"
+            else
+                printf "  %s %s\n" "$mark" "${options[$i]}"
+            fi
+        done
+        printf "\n  [space] select/deselect   [enter] confirm   [up/down] navigate\n"
+    }
+
+    _clear_multi() {
+        local lines=$(( ${#options[@]} + 2 ))
+        local i
+        for (( i=0; i<lines; i++ )); do
+            printf "\e[1A\e[2K"
+        done
+    }
+
+    printf "\e[?25l"
+    _draw_multi
 
     while true; do
         IFS= read -rsn1 key
+
         if [[ $key == $'\x1b' ]]; then
-            read -rsn2 -t 0.1 key
-            case $key in
-                '[A') (( cursor > 0 )) && (( cursor-- )) ;;
-                '[B') (( cursor < ${#options[@]} - 1 )) && (( cursor++ )) ;;
-            esac
+            read -rsn1 -t 0.1 seq
+            if [[ $seq == '[' ]]; then
+                read -rsn1 -t 0.1 seq
+                case $seq in
+                    'A')
+                        if [[ $cursor -gt 0 ]]; then
+                            cursor=$(( cursor - 1 ))
+                        fi
+                        ;;
+                    'B')
+                        if [[ $cursor -lt $(( ${#options[@]} - 1 )) ]]; then
+                            cursor=$(( cursor + 1 ))
+                        fi
+                        ;;
+                esac
+            fi
         elif [[ $key == ' ' ]]; then
             if [[ "${selected[$cursor]}" == true ]]; then
                 selected[$cursor]=false
@@ -46,31 +65,18 @@ multi_select() {
             break
         fi
 
-        # Redraw
-        tput cuu $(( ${#options[@]} + 2 ))
-        for (( i=0; i<${#options[@]}; i++ )); do
-            tput el
-            if [[ "${selected[$i]}" == true ]]; then
-                local mark="[x]"
-            else
-                local mark="[ ]"
-            fi
-            if [[ $i -eq $cursor ]]; then
-                echo -e "\e[7m  $mark ${options[$i]}\e[0m"
-            else
-                echo "  $mark ${options[$i]}"
-            fi
-        done
-        echo ""
-        tput el
-        echo "  [space] select/deselect   [enter] confirm   [↑↓] navigate"
+        _clear_multi
+        _draw_multi
     done
 
-    tput cnorm
+    printf "\e[?25h"
+
     _result=()
     for (( i=0; i<${#options[@]}; i++ )); do
         [[ "${selected[$i]}" == true ]] && _result+=("${options[$i]}")
     done
+
+    unset -f _draw_multi _clear_multi
 }
 
 single_select() {
@@ -78,48 +84,61 @@ single_select() {
     shift
     local options=("$@")
     local cursor=0
-    local key
+    local key seq
 
-    tput civis
+    _draw_single() {
+        local i
+        for (( i=0; i<${#options[@]}; i++ )); do
+            if [[ $i -eq $cursor ]]; then
+                printf "\e[7m  %s\e[0m\n" "${options[$i]}"
+            else
+                printf "  %s\n" "${options[$i]}"
+            fi
+        done
+        printf "\n  [enter] confirm   [up/down] navigate\n"
+    }
 
-    # Initial draw
-    for (( i=0; i<${#options[@]}; i++ )); do
-        if [[ $i -eq $cursor ]]; then
-            echo -e "\e[7m  ${options[$i]}\e[0m"
-        else
-            echo "  ${options[$i]}"
-        fi
-    done
-    echo ""
-    echo "  [enter] confirm   [↑↓] navigate"
+    _clear_single() {
+        local lines=$(( ${#options[@]} + 2 ))
+        local i
+        for (( i=0; i<lines; i++ )); do
+            printf "\e[1A\e[2K"
+        done
+    }
+
+    printf "\e[?25l"
+    _draw_single
 
     while true; do
         IFS= read -rsn1 key
+
         if [[ $key == $'\x1b' ]]; then
-            read -rsn2 -t 0.1 key
-            case $key in
-                '[A') (( cursor > 0 )) && (( cursor-- )) ;;
-                '[B') (( cursor < ${#options[@]} - 1 )) && (( cursor++ )) ;;
-            esac
+            read -rsn1 -t 0.1 seq
+            if [[ $seq == '[' ]]; then
+                read -rsn1 -t 0.1 seq
+                case $seq in
+                    'A')
+                        if [[ $cursor -gt 0 ]]; then
+                            cursor=$(( cursor - 1 ))
+                        fi
+                        ;;
+                    'B')
+                        if [[ $cursor -lt $(( ${#options[@]} - 1 )) ]]; then
+                            cursor=$(( cursor + 1 ))
+                        fi
+                        ;;
+                esac
+            fi
         elif [[ $key == '' ]]; then
             break
         fi
 
-        # Redraw
-        tput cuu $(( ${#options[@]} + 2 ))
-        for (( i=0; i<${#options[@]}; i++ )); do
-            tput el
-            if [[ $i -eq $cursor ]]; then
-                echo -e "\e[7m  ${options[$i]}\e[0m"
-            else
-                echo "  ${options[$i]}"
-            fi
-        done
-        echo ""
-        tput el
-        echo "  [enter] confirm   [↑↓] navigate"
+        _clear_single
+        _draw_single
     done
 
-    tput cnorm
+    printf "\e[?25h"
     _result="${options[$cursor]}"
+
+    unset -f _draw_single _clear_single
 }
