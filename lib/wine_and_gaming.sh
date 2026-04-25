@@ -1,7 +1,7 @@
 wine_setup() {
     if [[ "${choices[chosen_mode]}" == "Manual" ]]; then
-        echo "Do you want to install Wine?"
-        single_select wine_choice "Yes" "No"
+        declare wine_choice
+        single_select wine_choice "Do you want to install Wine?" "Yes" "No"
         choices[wine_install]=$wine_choice
     fi
 
@@ -18,8 +18,8 @@ wine_setup() {
 
 gaming_setup() {
     if [[ "${choices[chosen_mode]}" == "Manual" ]]; then
-        echo "Do you want to install gaming packages?"
-        single_select gaming_choice "Yes" "No"
+        declare gaming_choice
+        single_select gaming_choice "Do you want to install gaming packages?" "Yes" "No"
         choices[gaming_packages]=$gaming_choice
     fi
 

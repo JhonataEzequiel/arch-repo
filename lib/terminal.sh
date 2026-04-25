@@ -1,7 +1,6 @@
 terminal_text_editor_setup() {
     if [[ "${choices[chosen_mode]}" == "Manual" ]]; then
-        echo "Select the terminal text editors you want to install"
-        multi_select tte_options "${terminal_text_editors[@]}" "Skip"
+        multi_select tte_options "Select the terminal text editors you want to install" "${terminal_text_editors[@]}" "Skip"
         [[ " ${tte_options[*]} " == *" Skip "* ]] && return
     fi
 
@@ -10,15 +9,14 @@ terminal_text_editor_setup() {
 
 terminal_emulator_setup() {
     if [[ "${choices[chosen_mode]}" == "Manual" ]]; then
-        echo "Select the terminals you want to install"
-        multi_select terminal_options "${terminals[@]}" "Skip"
+        multi_select terminal_options "Select the terminals you want to install" "${terminals[@]}" "Skip"
         [[ " ${terminal_options[*]} " == *" Skip "* ]] && return
     fi
 
     install_pacman "${terminal_options[@]}"
     if [[ " ${terminal_options[*]} " == *" ghostty "* ]] && [[ "${choices[chosen_mode]}" == "Manual" ]]; then
-        echo "Do you want my ghostty customization?"
-        single_select custom_ghostty "Yes" "No"
+        declare custom_ghostty
+        single_select custom_ghostty "Do you want my ghostty customization?" "Yes" "No"
         case $custom_ghostty in
             "Yes") cp -r configs/ghostty ~/.config/
         esac
@@ -27,8 +25,7 @@ terminal_emulator_setup() {
 
 terminal_utilities_setup() {
     if [[ "${choices[chosen_mode]}" == "Manual" ]]; then
-        echo "Select the terminal packages you want to install"
-        multi_select terminal_utilities_options "${terminal_tools[@]}" "Skip"
+        multi_select terminal_utilities_options "Select the terminal packages you want to install" "${terminal_tools[@]}" "Skip"
         [[ " ${terminal_utilities_options[*]} " == *" Skip "* ]] && return
     else
         return
@@ -45,9 +42,9 @@ terminal_utilities_setup() {
 
 install_zsh() {
     if [[ "${choices[chosen_mode]}" == "Manual" ]]; then
-        echo "Do you want to install Zsh?"
-        single_select zsh_choice "Yes" "No"
-        [[ "$zsh_choice" == "No" ]] &&  return 0
+        declare zsh_choice
+        single_select zsh_choice "Do you want to install Zsh?" "Yes" "No"
+        [[ "$zsh_choice" == "No" ]] && return 0
         choices[shell]=zsh
     fi
 
@@ -57,8 +54,8 @@ install_zsh() {
 
 shell_customizations() {
     if [[ "${choices[chosen_mode]}" == "Manual" ]]; then
-        echo "Do you want my shell customizations? (The fastfetch config will only be applied to ghostty or kitty)"
-        single_select shell_c "Yes" "No"
+        declare shell_c
+        single_select shell_c "Do you want my shell customizations? (The fastfetch config will only be applied to ghostty or kitty)" "Yes" "No"
         choices[shell_customization]=$shell_c
     fi
 

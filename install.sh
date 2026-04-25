@@ -23,3 +23,4 @@ wine_setup
 install_drivers
 gaming_setup
 configure_extra_setup
+grub_setup

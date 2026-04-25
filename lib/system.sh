@@ -18,6 +18,7 @@ prepare_pacman() {
 
     sudo sed -i 's/^#\(ILoveCandy\)/\1/' "$PACMAN_CONF"
     sudo sed -i 's/^#\(ParallelDownloads\s*=\s*\).*/\110/' "$PACMAN_CONF"
+    sudo sed -i 's/^#\(Color\)/\1/' "$PACMAN_CONF"
 
     echo "pacman.conf updated."
 }
@@ -32,9 +33,8 @@ update_mirrors() {
 }
 
 set_variables() {
-    echo "Choose your installation method:"
     declare mode
-    single_select mode "Manual" "GNOME + gaming" "GNOME, no gaming" "KDE Plasma + gaming" "KDE Plasma, no gaming" "Exit"
+    single_select mode "Choose your installation method:" "Manual" "GNOME + gaming" "GNOME, no gaming" "KDE Plasma + gaming" "KDE Plasma, no gaming" "Exit"
     choices[chosen_mode]=$mode
     [[ "${choices[chosen_mode]}" == "Exit" ]] && exit 0
 
@@ -48,21 +48,21 @@ set_variables() {
     choices[extra_configs]=true
     choices[gnome_extra_choice]=true
     choices[timeshift_choice]=true
-    choices[browser_choice]=firefox 
+    choices[browser_choice]=firefox
+    choices[grub_theme]="No"
 
     case ${choices[chosen_mode]} in
-        "GNOME + gaming") choices[desktop]="Gnome"; choices[gaming_packages]=true; terminal_options=(gnome-console) ;;
-        "GNOME, no gaming") choices[desktop]="Gnome"; choices[gaming_packages]=false; terminal_options=(gnome-console) ;;
-        "KDE Plasma + gaming") choices[desktop]="KDE Plasma"; choices[gaming_packages]=true; terminal_options=(konsole) ;;
+        "GNOME + gaming")      choices[desktop]="Gnome";      choices[gaming_packages]=true;  terminal_options=(gnome-console) ;;
+        "GNOME, no gaming")    choices[desktop]="Gnome";      choices[gaming_packages]=false; terminal_options=(gnome-console) ;;
+        "KDE Plasma + gaming") choices[desktop]="KDE Plasma"; choices[gaming_packages]=true;  terminal_options=(konsole) ;;
         "KDE Plasma, no gaming") choices[desktop]="KDE Plasma"; choices[gaming_packages]=false; terminal_options=(konsole) ;;
     esac
 }
 
 choose_de() {
     if [[ "${choices[chosen_mode]}" == "Manual" ]]; then
-        echo "Choose Your Desktop Environment"
         declare desktop_choice
-        single_select desktop_choice "Gnome" "KDE Plasma" "Exit"
+        single_select desktop_choice "Choose Your Desktop Environment" "Gnome" "KDE Plasma" "Exit"
         choices[desktop]=$desktop_choice
     fi
 
@@ -99,9 +99,8 @@ install_basic_features() {
     bluetooth_setup
 
     if [[ "${choices[chosen_mode]}" == "Manual" ]]; then
-        echo "Do you want to install printer support?"
         declare printer_choice
-        single_select printer_choice "Yes" "No"
+        single_select printer_choice "Do you want to install printer support?" "Yes" "No"
         choices[printer_support]=$printer_choice
     fi
 

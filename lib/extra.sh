@@ -7,8 +7,8 @@ configure_extra_setup() {
 
 cronie_and_timeshift_setup() {
     if [[ "${choices[chosen_mode]}" == "Manual" ]]; then
-        echo "Do you want to install Timeshift? (btrfs backup tool)"
-        single_select time_choice "Yes" "No"
+        declare time_choice
+        single_select time_choice "Do you want to install Timeshift? (btrfs backup tool)" "Yes" "No"
         choices[timeshift_choice]=$time_choice
     fi
 
@@ -25,8 +25,8 @@ cronie_and_timeshift_setup() {
 
 gnome_extra_setup() {
     if [[ "${choices[chosen_mode]}" == "Manual" ]]; then
-        echo "Do you want some extra gnome configuration?"
-        single_select gnome_choice "Yes" "No"
+        declare gnome_choice
+        single_select gnome_choice "Do you want some extra gnome configuration?" "Yes" "No"
         choices[gnome_extra_choice]=$gnome_choice
     fi
 
@@ -41,8 +41,7 @@ gnome_extra_setup() {
 extra_apps() {
     declare -a extra_choices
     if [[ "${choices[chosen_mode]}" == "Manual" ]]; then
-        echo "Choose which extra packages you want to install"
-        multi_select extra_choices "${extra[@]}" "None"
+        multi_select extra_choices "Choose which extra packages you want to install" "${extra[@]}" "None"
         [[ " ${extra_choices[*]} " == *" None "* ]] && return
         install_yay "${extra_choices[@]}"
     else
@@ -53,8 +52,7 @@ extra_apps() {
 browser_selection() {
     declare -a browser_choices
     if [[ "${choices[chosen_mode]}" == "Manual" ]]; then
-        echo "Select which browsers you wish to install"
-        multi_select browser_choices "${browsers[@]}" "None"
+        multi_select browser_choices "Select which browsers you wish to install" "${browsers[@]}" "None"
         [[ " ${browser_choices[*]} " == *" None "* ]] && return
         install_yay "${browser_choices[@]}"
     else

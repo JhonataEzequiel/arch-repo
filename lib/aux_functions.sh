@@ -1,6 +1,8 @@
 multi_select() {
     local -n _result=$1
     shift
+    local question="$1"
+    shift
     local options=("$@")
     local selected=()
     local cursor=0
@@ -12,6 +14,7 @@ multi_select() {
 
     _draw_multi() {
         local i
+        [[ -n "$question" ]] && printf "%s\n" "$question"
         for (( i=0; i<${#options[@]}; i++ )); do
             local mark="[ ]"
             [[ "${selected[$i]}" == true ]] && mark="[x]"
@@ -26,6 +29,7 @@ multi_select() {
 
     _clear_multi() {
         local lines=$(( ${#options[@]} + 2 ))
+        [[ -n "$question" ]] && lines=$(( lines + 1 ))
         local i
         for (( i=0; i<lines; i++ )); do
             printf "\e[1A\e[2K"
@@ -82,12 +86,15 @@ multi_select() {
 single_select() {
     local -n _result=$1
     shift
+    local question="$1"
+    shift
     local options=("$@")
     local cursor=0
     local key seq
 
     _draw_single() {
         local i
+        [[ -n "$question" ]] && printf "%s\n" "$question"
         for (( i=0; i<${#options[@]}; i++ )); do
             if [[ $i -eq $cursor ]]; then
                 printf "\e[7m  %s\e[0m\n" "${options[$i]}"
@@ -100,6 +107,7 @@ single_select() {
 
     _clear_single() {
         local lines=$(( ${#options[@]} + 2 ))
+        [[ -n "$question" ]] && lines=$(( lines + 1 ))
         local i
         for (( i=0; i<lines; i++ )); do
             printf "\e[1A\e[2K"
