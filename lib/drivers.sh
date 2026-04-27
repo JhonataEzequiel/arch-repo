@@ -53,6 +53,8 @@ nvidia_configure() {
         echo "$conf_line" | sudo tee -a "$conf_file" > /dev/null
         echo "nvidia.conf written."
     fi
+
+    nvidia_early_kms_setup
 }
 
 sof_firmware_setup() {
@@ -98,4 +100,35 @@ sof_firmware_setup() {
     else
         echo "sof-firmware não é necessário para este hardware. Pulando."
     fi
+}
+
+nvidia_early_kms_setup() {
+    local MKINITCPIO_CONF="/etc/mkinitcpio.conf"
+
+    local nvidia_modules=("nvidia" "nvidia_modeset" "nvidia_uvm" "nvidia_drm")
+
+    local current_modules
+    current_modules=$(grep -oP '(?<=^MODULES=\()[^)]*' "$MKINITCPIO_CONF")
+
+    local modules_to_add=()
+    for mod in "${nvidia_modules[@]}"; do
+        if [[ ! " $current_modules " =~ " $mod " ]]; then
+            modules_to_add+=("$mod")
+        fi
+    done
+
+    if [[ ${#modules_to_add[@]} -eq 0 ]]; then
+        echo "Early KMS da NVIDIA já configurado no mkinitcpio. Pulando."
+        return 0
+    fi
+
+    local new_modules="${current_modules} ${modules_to_add[*]}"
+    new_modules="${new_modules# }"
+
+    sudo sed -i "s|^MODULES=([^)]*)|MODULES=($new_modules)|" "$MKINITCPIO_CONF"
+    echo "Módulos NVIDIA adicionados ao mkinitcpio: ${modules_to_add[*]}"
+
+    echo "Regenerando initramfs..."
+    sudo mkinitcpio -P
+    echo "Initramfs regenerado com sucesso."
 }

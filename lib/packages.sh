@@ -58,7 +58,7 @@ gnome_apps=(
 )
 
 gnome_extra=(
-    extension-manager gapless gradia numix-folders-git numix-circle-icon-theme-git
+    extension-manager gradia numix-folders-git numix-circle-icon-theme-git harmonoid-bin
 )
 
 gnome_gvfs_extra=(
@@ -142,7 +142,7 @@ extra=(
     audacity komikku raider bottles gearlever
     flatseal switcheroo spotify-launcher 
     obs-studio discord libreoffice-still
-    octopi vscodium
+    octopi vscodium telegram-desktop anki
 )
 
 grub_packages=(
