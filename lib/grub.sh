@@ -16,7 +16,8 @@ grub_theme_selection() {
         Lain*)
             git clone --depth=1 https://github.com/uiriansan/LainGrubTheme
             cd LainGrubTheme
-            ./install.sh && ./patch_entries.sh
+            chmod +x install.sh patch_entries.sh
+            sudo ./install.sh && sudo ./patch_entries.sh
             cd ..
             rm -rf LainGrubTheme
             ;;
@@ -45,7 +46,7 @@ grub_theme_selection() {
             git clone https://github.com/shvchk/fallout-grub-theme.git
             cd fallout-grub-theme
             chmod +x install.sh
-            ./install.sh
+            sudo ./install.sh
             cd ..
             rm -rf fallout-grub-theme
             ;;
@@ -70,6 +71,10 @@ grub_setup() {
 
     echo "Configuring GRUB..."
 
+    # Keep a backup before mutating the config, mirroring the approach
+    # already used for /etc/nsswitch.conf.
+    sudo cp "$GRUB_CONF" "${GRUB_CONF}.bak"
+
     sudo sed -i 's/^GRUB_DEFAULT=.*/GRUB_DEFAULT=saved/' "$GRUB_CONF"
 
     if grep -q '^GRUB_SAVEDEFAULT=' "$GRUB_CONF"; then
@@ -88,7 +93,7 @@ grub_setup() {
         echo "GRUB_DISABLE_OS_PROBER=false" | sudo tee -a "$GRUB_CONF" > /dev/null
     fi
 
-    echo "GRUB configuration updated."
+    echo "GRUB configuration updated. Backup saved at ${GRUB_CONF}.bak"
 
     sudo grub-mkconfig -o /boot/grub/grub.cfg
     sudo update-grub

@@ -28,7 +28,10 @@ terminal_utilities_setup() {
         multi_select terminal_utilities_options "Select the terminal packages you want to install" "${terminal_tools[@]}" "Skip"
         [[ " ${terminal_utilities_options[*]} " == *" Skip "* ]] && return
     else
-        return
+        # Non-manual (opinionated) modes must still install the terminal
+        # utilities, since shell_customizations() applies a zsh/bash config
+        # that depends on tools like eza, bat, fd, ripgrep, and zoxide.
+        terminal_utilities_options=("${terminal_tools[@]}")
     fi
 
     install_pacman "${terminal_utilities_options[@]}"

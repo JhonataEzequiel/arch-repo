@@ -66,13 +66,13 @@ sof_firmware_setup() {
         audio_pci=$(lspci | grep -i "multimedia audio\|audio device\|signal processing")
         if echo "$audio_pci" | grep -qi "intel"; then
             needs_sof=true
-            reasons+=("Intel audio DSP detectado via lspci")
+            reasons+=("Intel audio DSP detected via lspci")
         fi
     fi
 
     if dmesg 2>/dev/null | grep -qi "sof\|sound open firmware\|failed to load.*firmware"; then
         needs_sof=true
-        reasons+=("Firmware de áudio ausente detectado no dmesg")
+        reasons+=("Missing audio firmware detected in dmesg")
     fi
 
     if [[ -d /proc/asound ]]; then
@@ -81,24 +81,24 @@ sof_firmware_setup() {
            grep -rqi "tgl\|adl\|rpl\|mtl\|lnl\|skl\|kbl\|cml" \
             /proc/asound/*/id 2>/dev/null; then
             needs_sof=true
-            reasons+=("Codec HDA Intel compatível com SOF detectado em /proc/asound")
+            reasons+=("SOF-compatible Intel HDA codec detected in /proc/asound")
         fi
     fi
 
     if lsmod | grep -qi "^snd_sof\|^snd_hda_intel\|^snd_soc"; then
         needs_sof=true
-        reasons+=("Módulo de áudio SOF/HDA Intel ativo no kernel")
+        reasons+=("SOF/HDA Intel audio kernel module active")
     fi
 
     if [[ "$needs_sof" == true ]]; then
-        echo "sof-firmware pode ser necessário neste hardware:"
+        echo "sof-firmware may be needed on this hardware:"
         for reason in "${reasons[@]}"; do
             echo "  - $reason"
         done
-        echo "Instalando sof-firmware..."
+        echo "Installing sof-firmware..."
         install_pacman sof-firmware
     else
-        echo "sof-firmware não é necessário para este hardware. Pulando."
+        echo "sof-firmware is not needed on this hardware. Skipping."
     fi
 }
 
@@ -118,7 +118,7 @@ nvidia_early_kms_setup() {
     done
 
     if [[ ${#modules_to_add[@]} -eq 0 ]]; then
-        echo "Early KMS da NVIDIA já configurado no mkinitcpio. Pulando."
+        echo "NVIDIA early KMS is already configured in mkinitcpio. Skipping."
         return 0
     fi
 
@@ -126,9 +126,9 @@ nvidia_early_kms_setup() {
     new_modules="${new_modules# }"
 
     sudo sed -i "s|^MODULES=([^)]*)|MODULES=($new_modules)|" "$MKINITCPIO_CONF"
-    echo "Módulos NVIDIA adicionados ao mkinitcpio: ${modules_to_add[*]}"
+    echo "NVIDIA modules added to mkinitcpio: ${modules_to_add[*]}"
 
-    echo "Regenerando initramfs..."
+    echo "Regenerating initramfs..."
     sudo mkinitcpio -P
-    echo "Initramfs regenerado com sucesso."
+    echo "Initramfs regenerated successfully."
 }

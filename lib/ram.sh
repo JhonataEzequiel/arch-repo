@@ -19,7 +19,16 @@ configure_swap() {
 
         echo "Existing swap detected at ${existing} ($(( current_size_bytes / 1024 / 1024 ))MB). Recreating at 8G..."
         sudo swapoff "$existing"
-        sudo rm -f "$existing"
+
+        # Only remove the underlying path if it is actually a regular file.
+        # If the existing swap lives on a partition (e.g. /dev/sdaX or a
+        # block device under /dev/mapper), never rm it - that would delete
+        # a device node, not swap data.
+        if [[ -f "$existing" ]]; then
+            sudo rm -f "$existing"
+        else
+            echo "NOTE: ${existing} appears to be a block device, not a file. Leaving it untouched; only disabling it as swap."
+        fi
 
         # Remove old fstab entry to avoid duplicates
         sudo sed -i "\|${existing}|d" /etc/fstab
@@ -88,7 +97,6 @@ configure_zram() {
 
     echo "Detected ${total_ram_gb}GB RAM. Setting zram size to ${zram_size}."
 
-    sudo mkdir -p /etc/systemd/zram-generator.conf.d
     sudo tee /etc/systemd/zram-generator.conf > /dev/null <<EOF
 [zram0]
 zram-size = ${zram_size}
@@ -97,7 +105,9 @@ swap-priority = 100
 EOF
 
     sudo systemctl daemon-reload
-    sudo systemctl start systemd-zram-setup@zram0.service
+    # Use restart instead of start so a re-run picks up a changed zram size
+    # even if the service is already active from a previous run.
+    sudo systemctl restart systemd-zram-setup@zram0.service
 
     if swapon --show | grep -q zram; then
         echo "zram configured and active (size: ${zram_size}, priority: 100)."

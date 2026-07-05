@@ -3,13 +3,15 @@ check_prerequisites() {
         echo "Error: This script is designed for Arch Linux only."
         exit 1
     fi
-    install_pacman git
+
     for cmd in pacman sudo; do
         if ! command -v "$cmd" &>/dev/null; then
             echo "Error: $cmd is not installed."
             exit 1
         fi
     done
+
+    install_pacman git
 }
 
 prepare_pacman() {
@@ -112,7 +114,11 @@ install_basic_features() {
 }
 
 bluetooth_setup() {
-    if lsmod | grep -qi bluetooth; then
+    # Check loaded kernel modules as well as PCI/USB hardware, since the
+    # bluetooth module may not be loaded yet even if hardware is present.
+    if lsmod | grep -qi bluetooth \
+        || lspci -k 2>/dev/null | grep -qi bluetooth \
+        || command -v lsusb &>/dev/null && lsusb 2>/dev/null | grep -qi bluetooth; then
         install_pacman "${bluetooth[@]}"
         sudo systemctl enable --now bluetooth.service
     fi
@@ -136,7 +142,7 @@ printer_setup() {
 aur_setup() {
     if ! command -v yay &>/dev/null; then
         local go_preinstalled=false
-        pacman -Qs go &>/dev/null && go_preinstalled=true
+        pacman -Q go &>/dev/null && go_preinstalled=true
 
         install_pacman go
         echo "Installing yay..."

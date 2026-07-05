@@ -7,3 +7,4 @@ source lib/wine_and_gaming.sh
 source lib/drivers.sh
 source lib/extra.sh
 source lib/grub.sh
+source lib/ram.sh
