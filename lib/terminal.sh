@@ -25,8 +25,33 @@ terminal_emulator_setup() {
 
 terminal_utilities_setup() {
     if [[ "${choices[chosen_mode]}" == "Manual" ]]; then
-        multi_select terminal_utilities_options "Select the terminal packages you want to install" "${terminal_tools[@]}" "Skip"
-        [[ " ${terminal_utilities_options[*]} " == *" Skip "* ]] && return
+        local has_all=false
+        local has_skip=false
+
+        while true; do
+            multi_select terminal_utilities_options "Select the terminal packages you want to install" "${terminal_tools[@]}" "All" "Skip"
+
+            has_all=false
+            has_skip=false
+            [[ " ${terminal_utilities_options[*]} " == *" All "* ]] && has_all=true
+            [[ " ${terminal_utilities_options[*]} " == *" Skip "* ]] && has_skip=true
+
+            if [[ "$has_all" == true && "$has_skip" == true ]]; then
+                echo "\"All\" and \"Skip\" are contradictory - please select again."
+                continue
+            fi
+
+            break
+        done
+
+        [[ "$has_skip" == true ]] && return
+
+        if [[ "$has_all" == true ]]; then
+            # "All" was picked, possibly alongside individual tools too.
+            # Install the full list once instead of trying to install "All"
+            # as a package or installing anything picked alongside it twice.
+            terminal_utilities_options=("${terminal_tools[@]}")
+        fi
     else
         # Non-manual (opinionated) modes must still install the terminal
         # utilities, since shell_customizations() applies a zsh/bash config
