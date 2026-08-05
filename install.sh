@@ -25,3 +25,4 @@ gaming_setup
 configure_extra_setup
 grub_setup
 ram_setup
+# ola
